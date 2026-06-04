@@ -11,26 +11,105 @@ public struct DecoratedString {
 
   public var text: Text {
     var rendered = Text("")
+    var activeFormatting: ANSIGraphicsModes = []
+    var currentTextBuffer = ""
 
-    var indices: Set<String.Index> = []
-    for index in self.parsed.controlCharacters.keys {
-      indices.insert(index)
-    }
-    for index in self.parsed.escapeSequences.keys {
-      indices.insert(index)
+    var index = self.value.startIndex
+    while index < self.value.endIndex {
+      // Check if this position has an escape sequence
+      if let boundedSequence = self.parsed.escapeSequences[index] {
+        // Flush any pending text with current formatting
+        if !currentTextBuffer.isEmpty {
+          rendered = rendered + applyFormatting(Text(currentTextBuffer), modes: activeFormatting)
+          currentTextBuffer = ""
+        }
+
+        // Process the escape sequence
+        if case let .graphicsModes(modes) = boundedSequence.sequence {
+          // Handle reset specially
+          if modes.contains(.reset) {
+            activeFormatting.removeAll()
+          } else {
+            activeFormatting.formUnion(modes)
+          }
+        }
+
+        // Skip past the entire escape sequence
+        for _ in 0 ..< boundedSequence.count {
+          index = self.value.index(after: index)
+          if index >= self.value.endIndex {
+            break
+          }
+        }
+        continue
+      }
+
+      // Check if this is a control character
+      if let controlChar = self.parsed.controlCharacters[index] {
+        // Flush pending text
+        if !currentTextBuffer.isEmpty {
+          rendered = rendered + applyFormatting(Text(currentTextBuffer), modes: activeFormatting)
+          currentTextBuffer = ""
+        }
+
+        // Handle specific control characters
+        switch controlChar {
+        case .bell:
+          rendered = rendered + Text("!")
+        case .linefeed, .carriageReturn:
+          rendered = rendered + Text("\n")
+        default:
+          break
+        }
+
+        index = self.value.index(after: index)
+        continue
+      }
+
+      // Regular character - add to buffer
+      currentTextBuffer.append(self.value[index])
+      index = self.value.index(after: index)
     }
 
-    for index in indices.sorted() {
-      let controlCharacter = self.parsed.controlCharacters[index]
-      switch controlCharacter {
-      case .bell:
-        rendered = rendered + Text("!")
-      default:
+    // Flush any remaining text
+    if !currentTextBuffer.isEmpty {
+      rendered = rendered + applyFormatting(Text(currentTextBuffer), modes: activeFormatting)
+    }
+
+    return rendered
+  }
+
+  private func applyFormatting(_ text: Text, modes: ANSIGraphicsModes) -> Text {
+    var result = text
+
+    for mode in modes {
+      switch mode {
+      case .bold:
+        result = result.bold()
+      case .dim:
+        break
+      case .italic:
+        result = result.italic()
+      case .underline:
+        result = result.underline()
+      case .strikethrough:
+        result = result.strikethrough()
+      case .inverse:
+        break
+      case .invisible:
+        break
+      case .blinking:
+        break
+      case .foreground(let color):
+        result = result.foregroundColor(color)
+      case .background:
+        break
+      case .reset:
         break
       }
     }
 
-    return rendered
+    return result
   }
 
   public var hasBell: Bool {
@@ -232,8 +311,70 @@ public enum ANSIParser {
         graphicsModes.insert(.invisible)
       case 9:
         graphicsModes.insert(.strikethrough)
+      case 30:
+        graphicsModes.insert(.foreground(Color.black))
       case 31:
         graphicsModes.insert(.foreground(Color.red))
+      case 32:
+        graphicsModes.insert(.foreground(Color.green))
+      case 33:
+        graphicsModes.insert(.foreground(Color.yellow))
+      case 34:
+        graphicsModes.insert(.foreground(Color.blue))
+      case 35:
+        graphicsModes.insert(.foreground(Color(red: 1.0, green: 0.0, blue: 1.0)))
+      case 36:
+        graphicsModes.insert(.foreground(Color(red: 0.0, green: 1.0, blue: 1.0)))
+      case 37:
+        graphicsModes.insert(.foreground(Color.white))
+      case 90:
+        graphicsModes.insert(.foreground(Color.gray))
+      case 91:
+        graphicsModes.insert(.foreground(Color(red: 1.0, green: 0.5, blue: 0.5)))
+      case 92:
+        graphicsModes.insert(.foreground(Color(red: 0.5, green: 1.0, blue: 0.5)))
+      case 93:
+        graphicsModes.insert(.foreground(Color(red: 1.0, green: 1.0, blue: 0.5)))
+      case 94:
+        graphicsModes.insert(.foreground(Color(red: 0.5, green: 0.5, blue: 1.0)))
+      case 95:
+        graphicsModes.insert(.foreground(Color(red: 1.0, green: 0.5, blue: 1.0)))
+      case 96:
+        graphicsModes.insert(.foreground(Color(red: 0.5, green: 1.0, blue: 1.0)))
+      case 97:
+        graphicsModes.insert(.foreground(Color.white))
+      case 40:
+        graphicsModes.insert(.background(Color.black))
+      case 41:
+        graphicsModes.insert(.background(Color.red))
+      case 42:
+        graphicsModes.insert(.background(Color.green))
+      case 43:
+        graphicsModes.insert(.background(Color.yellow))
+      case 44:
+        graphicsModes.insert(.background(Color.blue))
+      case 45:
+        graphicsModes.insert(.background(Color(red: 1.0, green: 0.0, blue: 1.0)))
+      case 46:
+        graphicsModes.insert(.background(Color(red: 0.0, green: 1.0, blue: 1.0)))
+      case 47:
+        graphicsModes.insert(.background(Color.white))
+      case 100:
+        graphicsModes.insert(.background(Color.gray))
+      case 101:
+        graphicsModes.insert(.background(Color(red: 1.0, green: 0.5, blue: 0.5)))
+      case 102:
+        graphicsModes.insert(.background(Color(red: 0.5, green: 1.0, blue: 0.5)))
+      case 103:
+        graphicsModes.insert(.background(Color(red: 1.0, green: 1.0, blue: 0.5)))
+      case 104:
+        graphicsModes.insert(.background(Color(red: 0.5, green: 0.5, blue: 1.0)))
+      case 105:
+        graphicsModes.insert(.background(Color(red: 1.0, green: 0.5, blue: 1.0)))
+      case 106:
+        graphicsModes.insert(.background(Color(red: 0.5, green: 1.0, blue: 1.0)))
+      case 107:
+        graphicsModes.insert(.background(Color.white))
       default:
         break
       }
