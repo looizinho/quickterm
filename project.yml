@@ -1,0 +1,146 @@
+name: QuickTerm
+
+options:
+  bundleIdPrefix: se.axgn
+  deploymentTarget:
+    macOS: "11.0"
+  defaultConfig: Debug
+  generateEmptyDirectories: true
+  xcodeVersion: "16"
+
+settings:
+  base:
+    ARCHS: arm64
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "11.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+
+configs:
+  Debug: debug
+  Release: release
+
+packages:
+  swift-argument-parser:
+    url: https://github.com/apple/swift-argument-parser
+    minorVersion: 0.4.3
+  HotKey:
+    url: https://github.com/soffes/HotKey
+    from: 0.1.3
+  Yams:
+    url: https://github.com/jpsim/Yams.git
+    from: 4.0.6
+
+targets:
+
+  # ── Shared types (static framework, no embedding needed) ──────────────────
+  QuickTermShared:
+    type: framework
+    platform: macOS
+    sources:
+      - Sources/QuickTermShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: se.axgn.QuickTermShared
+        MACH_O_TYPE: staticlib
+        SKIP_INSTALL: "YES"
+
+  # ── UI & parsing library (static framework) ───────────────────────────────
+  QuickTermLibrary:
+    type: framework
+    platform: macOS
+    sources:
+      - Sources/QuickTermLibrary
+    dependencies:
+      - target: QuickTermShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: se.axgn.QuickTermLibrary
+        MACH_O_TYPE: staticlib
+        SKIP_INSTALL: "YES"
+
+  # ── XPC background service ────────────────────────────────────────────────
+  QuickTermBroker:
+    type: xpc-service
+    platform: macOS
+    sources:
+      - Sources/QuickTermBroker
+    info:
+      path: SupportingFiles/QuickTermBroker/Info.plist
+      properties:
+        CFBundleIdentifier: se.axgn.QuickTerm.Broker
+        XPCService:
+          ServiceType: User
+    dependencies:
+      - target: QuickTermShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: se.axgn.QuickTerm.Broker
+        CODE_SIGN_ENTITLEMENTS: SupportingFiles/QuickTermBroker/Entitlements.plist
+
+  # ── Main application ──────────────────────────────────────────────────────
+  QuickTerm:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/QuickTerm
+      - path: SupportingFiles/QuickTerm/AppIcon.xcassets
+      - path: SupportingFiles/QuickTerm/Resources/Fonts
+        type: folder
+    info:
+      path: SupportingFiles/QuickTerm/Info.plist
+      properties:
+        CFBundleDisplayName: QuickTerm
+        CFBundleIdentifier: se.axgn.QuickTerm
+        NSHumanReadableCopyright: "Copyright © 2020 Alex Gustafsson. All rights reserved."
+        CFBundleShortVersionString: "0.5.0"
+        CFBundleVersion: "0.5.0"
+        LSUIElement: YES
+        ATSApplicationFontsPath: Fonts
+    dependencies:
+      - target: QuickTermShared
+      - target: QuickTermLibrary
+      - target: QuickTermBroker
+        embed: true
+      - package: swift-argument-parser
+        product: ArgumentParser
+      - package: HotKey
+        product: HotKey
+      - package: Yams
+        product: Yams
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: se.axgn.QuickTerm
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: "YES"
+        CODE_SIGN_ENTITLEMENTS: SupportingFiles/QuickTerm/Entitlements.plist
+
+  # ── Unit tests ────────────────────────────────────────────────────────────
+  QuickTermLibraryTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/QuickTermLibraryTests
+    dependencies:
+      - target: QuickTermLibrary
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: se.axgn.QuickTermLibraryTests
+
+schemes:
+  QuickTerm:
+    build:
+      targets:
+        QuickTerm: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - name: QuickTermLibraryTests
+          parallelizable: true
+          randomExecutionOrder: true
+    profile:
+      config: Release
+    archive:
+      config: Release
