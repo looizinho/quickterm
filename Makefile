@@ -6,6 +6,10 @@ CXX=clang
 CPP=clang
 CC=clang
 
+# Apple Silicon (arm64) only build configuration
+ARCH=arm64
+SWIFT_ARCH_FLAGS?=-Xswiftc -target -Xswiftc arm64-apple-macos11
+
 .PHONY: build run setup setup-git-hooks test lint format package sign logs help clean
 
 modules=QuickTerm QuickTermBroker
@@ -19,13 +23,13 @@ version := $(shell grep 'CFBundleShortVersionString' -A1 SupportingFiles/QuickTe
 help:
 	pcregrep -Mo '^(#.*\n)+^[^# ]+:' Makefile | sed "s/^\([^# ]\+\):/> \1/g" | sed "s/^#\s\+\(.\+\)/\1/g" | GREP_COLORS='ms=1;34' grep -E --color=always '^>.*|$$' | GREP_COLORS='ms=1;37' grep -E --color=always '^[^>].*|$$'
 
-# Build the application
-build: build/QuickTerm.app
+# Build the application (arm64 only)
+build: build/QuickTerm.app verify-arch
 
 # Macro to create a rule to build a module
 define buildModule
 build/$(1)/release/$(1): $(shell find "Sources/$(1)" -type f -name "*.swift") $(sharedSource) SupportingFiles/$(1)/Info.plist
-	swift build --configuration release --product "$(1)" --build-path "build/$(1)" $(SWIFT_FLAGS)
+	swift build --configuration release --product "$(1)" --build-path "build/$(1)" $(SWIFT_ARCH_FLAGS) $(SWIFT_FLAGS)
 endef
 
 # Create the build rule for all modules
@@ -118,6 +122,15 @@ sign: build/QuickTerm.app
 	codesign -o runtime --force --entitlements SupportingFiles/QuickTermBroker/Entitlements.plist --sign "$(CODESIGN_IDENTITY)" --timestamp build/QuickTerm.app/Contents/XPCServices/QuickTermBroker.xpc/Contents/MacOS/QuickTermBroker
 	codesign -o runtime --force --entitlements SupportingFiles/QuickTermBroker/Entitlements.plist --sign "$(CODESIGN_IDENTITY)" --timestamp build/QuickTerm.app/Contents/XPCServices/QuickTermBroker.xpc
 	codesign -o runtime --force --entitlements SupportingFiles/QuickTerm/Entitlements.plist --sign "$(CODESIGN_IDENTITY)" --timestamp build/QuickTerm.app
+
+# Verify architecture is arm64 only
+verify-arch: build/QuickTerm.app
+	@arch=$$(lipo -info build/QuickTerm.app/Contents/MacOS/QuickTerm 2>/dev/null | awk '{print $$NF}'); \
+	if [ "$$arch" != "arm64" ]; then \
+		echo "❌ Error: Binary is $$arch, not arm64"; exit 1; \
+	else \
+		echo "✅ Binary verified as arm64-only"; \
+	fi
 
 # Tail logs produced by QuickTerm
 logs:
