@@ -40,10 +40,14 @@ class TerminalSession: Identifiable, ObservableObject, Equatable {
     let process = Process()
     process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
     var command: String = configuration.command
+    var arguments: [String] = [configuration.shell]
     if configuration.shell == "bash", configuration.sourceBashProfile {
       command = "shopt -s expand_aliases;source ~/.bash_profile\n" + command
+    } else if configuration.shell == "zsh" {
+      arguments.append("-l")
     }
-    process.arguments = [configuration.shell, "-c", command]
+    arguments.append(contentsOf: ["-c", command])
+    process.arguments = arguments
     process.currentDirectoryURL = configuration.workingDirectory
     self.process = process
     logger.debug("Created process")

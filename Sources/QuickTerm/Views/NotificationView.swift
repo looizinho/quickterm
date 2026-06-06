@@ -30,9 +30,9 @@ struct NotificationView: View {
   var body: some View {
     ZStack(alignment: .topLeading) {
       VStack(alignment: .leading) {
-        Text("❯ ").font(.custom("FiraMono-Regular", size: 11))
+        Text("❯ ").font(.custom("Monoid-Regular", size: 11))
           .foregroundColor(session.hasFinished ? (session.wasSuccessful ? .green : .red) : .primary)
-          + Text(session.configuration.command).font(.custom("FiraMono-Regular", size: 11))
+          + Text(session.configuration.command).font(.custom("Monoid-Regular", size: 11))
         ScrollView {
           outputText
         }
@@ -58,9 +58,9 @@ struct NotificationView: View {
   }
 
   private var outputText: some View {
-    let result = DecoratedString(fromString: session.output).text.font(.custom("FiraMono-Regular", size: 11))
+    let result = DecoratedString(fromString: session.output).text.font(.custom("Monoid-Regular", size: 11))
       .frame(maxWidth: .infinity, alignment: .leading).multilineTextAlignment(.leading)
-    // let result = Text(session.output).font(.custom("FiraMono-Regular", size: 11))
+    // let result = Text(session.output).font(.custom("Monoid-Regular", size: 11))
     //   .frame(maxWidth: .infinity, alignment: .leading).multilineTextAlignment(.leading)
     return Group {
       if session.configuration.animate {

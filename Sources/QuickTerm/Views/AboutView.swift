@@ -12,7 +12,8 @@ struct AboutView: View {
       Text("App version: v\(applicationVersion)").font(.footnote)
       VStack {
         Text("\(applicationName) is Free Open Source Software.")
-        Link("Contribute on GitHub", destination: URL(string: "https://github.com/AlexGustafsson/quickterm")!)
+        Link("Contribute on GitHub", destination: URL(string: "https://github.com/looizinho/quickterm")!)
+        Link("Fork From", destination: URL(string: "https://github.com/looizinho/quickterm")!)
       }
       .font(.body).padding()
     }

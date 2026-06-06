@@ -10,7 +10,7 @@ public struct SpotlightView: View {
     VStack(alignment: .center) {
       VStack(alignment: .leading, spacing: 0) {
         HStack(alignment: .center) {
-          Text("❯").font(.custom("FiraMono-Regular", size: 22)).opacity(0.6)
+          Text("❯").font(.custom("Monoid-Regular", size: 22)).opacity(0.6)
           SpotlightTextField(placeholder, text: text, controller: controller)
         }.frame(height: 30).padding(.init(top: 10, leading: 15, bottom: 10, trailing: 15))
         if !controller.sections.isEmpty {

@@ -11,7 +11,7 @@ class ExplicitFontTextFieldCell: NSTextFieldCell {
     }
     set {
       // Do nothing, use realFont instead
-      if let font = NSFont(name: "FiraMono-Regular", size: 22) {
+      if let font = NSFont(name: "Monoid-Regular", size: 22) {
         super.font = font
       } else {}
     }
@@ -46,7 +46,7 @@ private class ExplicitFontTextField: NSTextField {
     }
     set {
       // Do nothing, use realFont instead
-      if let font = NSFont(name: "FiraMono-Regular", size: 22) {
+      if let font = NSFont(name: "Monoid-Regular", size: 22) {
         super.font = font
       } else {}
     }

@@ -33,14 +33,14 @@ class Config {
   }
 
   struct CommandConfigurationValues: Codable {
-    var shell: String = "bash"
+    var shell: String = "zsh"
     var timeout: Double = 5
     var keep: Bool = false
     var animate: Bool = false
     var waitForExit: Bool = false
     var sourceBashProfile: Bool = true
-    var delayAfterExit: Double = 3
-    var workingDirectory: String? = nil
+    var delayAfterExit: Double = 5
+    var workingDirectory: String? = "/Users/luizinho"
   }
 
   struct ConfigValues: Codable {
