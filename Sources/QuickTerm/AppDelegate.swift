@@ -138,13 +138,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     if let spotlight = Spotlight() {
       self.spotlightIsShowing = true
+      spotlight.contextLabel = RuntimeState.shared.workingDirectory
       let delegate = CommandSpotlightDelegate(spotlight, history: self.history)
       spotlight.delegate = delegate
       spotlight.show {
         command in
 
-        let workingDirectory = Config.current.commandConfiguration.workingDirectory ?? FileManager.default
-          .currentDirectoryPath
+        if SlashCommandRegistry.shared.handle(command) {
+          return
+        }
+
+        let workingDirectory = RuntimeState.shared.workingDirectory
         let configuration = QuickTermShared.CommandConfiguration(
           workingDirectory: URL(fileURLWithPath: workingDirectory),
           command: command,

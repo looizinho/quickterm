@@ -101,7 +101,7 @@ public struct DecoratedString {
       case .blinking:
         break
       case .foreground(let color):
-        result = result.foregroundColor(color)
+        result = result.foregroundStyle(color)
       case .background:
         break
       case .reset:

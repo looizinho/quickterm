@@ -56,8 +56,7 @@ class CommandSpotlightDelegate: SpotlightDelegate {
     }
 
     self.spotlight.clearSection("Files")
-    let workingDirectory = Config.current.commandConfiguration.workingDirectory ?? FileManager.default
-      .currentDirectoryPath
+    let workingDirectory = RuntimeState.shared.workingDirectory
     do {
       let basenames = try FileManager.default.contentsOfDirectory(atPath: workingDirectory)
       for basename in basenames {

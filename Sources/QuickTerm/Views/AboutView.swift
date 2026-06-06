@@ -13,7 +13,7 @@ struct AboutView: View {
       VStack {
         Text("\(applicationName) is Free Open Source Software.")
         Link("Contribute on GitHub", destination: URL(string: "https://github.com/looizinho/quickterm")!)
-        Link("Fork From", destination: URL(string: "https://github.com/looizinho/quickterm")!)
+        Link("Forked From", destination: URL(string: "https://github.com/looizinho/quickterm")!)
       }
       .font(.body).padding()
     }

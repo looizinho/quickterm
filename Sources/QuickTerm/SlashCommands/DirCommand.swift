@@ -12,14 +12,26 @@ struct DirCommand: SlashCommand {
       return
     }
 
-    let expanded = (raw as NSString).expandingTildeInPath
+    let resolved: String
+    if raw.hasPrefix("/") {
+      resolved = raw
+    } else if raw.hasPrefix("~") {
+      resolved = (raw as NSString).expandingTildeInPath
+    } else {
+      resolved = (RuntimeState.shared.workingDirectory as NSString).appendingPathComponent(raw)
+    }
+    let standardized = (resolved as NSString).standardizingPath
+
     var isDirectory: ObjCBool = false
-    guard FileManager.default.fileExists(atPath: expanded, isDirectory: &isDirectory), isDirectory.boolValue else {
-      logger.error("Directory does not exist: \(expanded, privacy: .public)")
+    guard
+      FileManager.default.fileExists(atPath: standardized, isDirectory: &isDirectory),
+      isDirectory.boolValue
+    else {
+      logger.error("Directory does not exist: \(standardized, privacy: .public)")
       return
     }
 
-    RuntimeState.shared.setWorkingDirectory(expanded)
-    logger.info("Working directory set to: \(expanded, privacy: .public)")
+    RuntimeState.shared.setWorkingDirectory(standardized)
+    logger.info("Working directory set to: \(standardized, privacy: .public)")
   }
 }

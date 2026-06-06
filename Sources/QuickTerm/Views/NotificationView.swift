@@ -64,9 +64,9 @@ struct NotificationView: View {
     //   .frame(maxWidth: .infinity, alignment: .leading).multilineTextAlignment(.leading)
     return Group {
       if session.configuration.animate {
-        result.animation(.default)
+        result.animation(.default, value: session.output)
       } else {
-        result.animation(nil)
+        result.animation(nil, value: session.output)
       }
     }
   }

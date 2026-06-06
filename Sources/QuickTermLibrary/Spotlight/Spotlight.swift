@@ -7,6 +7,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 
 public class Spotlight: ObservableObject {
   @Published public var text = ""
+  @Published public var contextLabel: String? = nil
   @Published private(set) var itemCount: Int = 0
   @Published private(set) var sections: [SpotlightItemSection] = []
   @Published private(set) var selectedItem: Int? = nil

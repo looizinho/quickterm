@@ -10,10 +10,11 @@ class SlashCommandRegistry {
 
   init() {
     self.register(DirCommand())
+    self.register(QuitCommand())
   }
 
   func register(_ command: SlashCommand) {
-    self.commands[type(of: command).name] = command
+    self.commands[type(of: command).name.lowercased()] = command
   }
 
   /// Returns true if the input was a slash command (handled or unknown),
@@ -27,7 +28,7 @@ class SlashCommandRegistry {
     let parts = body.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true).map(String.init)
     guard let name = parts.first else { return false }
 
-    guard let command = self.commands[name] else {
+    guard let command = self.commands[name.lowercased()] else {
       logger.error("Unknown slash command: \(name, privacy: .public)")
       return true
     }

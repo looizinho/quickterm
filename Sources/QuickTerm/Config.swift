@@ -44,6 +44,7 @@ class Config {
   }
 
   struct ConfigValues: Codable {
+    var openAtLogin: Bool = false
     var commandConfiguration = CommandConfigurationValues()
     var hotKeys = HotKeyValues()
   }

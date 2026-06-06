@@ -3,7 +3,7 @@ name: QuickTerm
 options:
   bundleIdPrefix: se.axgn
   deploymentTarget:
-    macOS: "11.0"
+    macOS: "15.0"
   defaultConfig: Debug
   generateEmptyDirectories: true
   xcodeVersion: "16"
@@ -12,7 +12,7 @@ settings:
   base:
     ARCHS: arm64
     SWIFT_VERSION: "5.0"
-    MACOSX_DEPLOYMENT_TARGET: "11.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: ""
 

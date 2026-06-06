@@ -3,16 +3,25 @@ import SwiftUI
 public struct SpotlightView: View {
   public let placeholder: String
   @EnvironmentObject var controller: Spotlight
-
+  
   public var body: some View {
     let text = Binding(keyPath: \.text, settings: controller)
-
+    
     VStack(alignment: .center) {
       VStack(alignment: .leading, spacing: 0) {
+        if let label = controller.contextLabel, !label.isEmpty {
+          Text(label)
+            .font(.custom("Monoid-Regular", size: 10))
+            .opacity(0.7)
+            .lineLimit(1)
+            .truncationMode(.middle)
+            .padding(.init(top: 8, leading: 18, bottom: 0, trailing: 18))
+            .foregroundStyle(Color.cyan)
+        }
         HStack(alignment: .center) {
-          Text("❯").font(.custom("Monoid-Regular", size: 22)).opacity(0.6)
+          Text("❯").font(.custom("Monoid-Regular", size: 22)).opacity(0.6).foregroundStyle(Color.orange)
           SpotlightTextField(placeholder, text: text, controller: controller)
-        }.frame(height: 30).padding(.init(top: 10, leading: 15, bottom: 10, trailing: 15))
+        }.frame(height: 30).padding(.init(top: 6, leading: 15, bottom: 10, trailing: 15))
         if !controller.sections.isEmpty {
           Divider()
           ScrollView {
